@@ -9,12 +9,19 @@
 ------
 ## 实现功能
 - 用户登录注册、个人介绍编辑![](./demo_image/登录.jpg)
+
 - 创建聊天房间![](./demo_image/创建房间.jpg)
+
 - 添加好友和房间
-    ![](./demo_image/添加好友和房间.jpg)
+
+   ![](./demo_image/添加好友和房间.jpg)
+    
 - 房间群聊![](./demo_image/房间聊天.jpg)
+
 - 好友聊天![](./demo_image/好友聊天.jpg)
+
 - 未读消息提醒
+
     ![](./demo_image/未读消息提醒.jpg)
 
 

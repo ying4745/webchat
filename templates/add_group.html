@@ -1,0 +1,20 @@
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h4 class="modal-title" id="myModalLabel">创建聊天房间</h4>
+</div>
+<div class="modal-body">
+    <form action="" novalidate>
+        {% csrf_token %}
+        {% for field in add_group_form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                <span class="help-block">{{ field.errors.0 }}</span>
+            </div>
+        {% endfor %}
+    </form>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+    <button type="button" onclick="create_group()" class="btn btn-primary">创建</button>
+</div>

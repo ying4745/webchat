@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% block title %}与 {{ friend.username }} 的聊天{% endblock %}
+{% block content_left %}
+    <div class="chat-case box">
+        <div id="friend-chat-title">与 {{ friend.username }} 的聊天</div>
+        <ul id="chat-box" class="list-group">
+            {% for f_h_msg in friend_history_msg %}
+                {% if f_h_msg.sender == request.user %}
+                    <li class="list-group-item pull-right">
+                        <p style="float: right;">{{ f_h_msg.sender.username }}<span
+                                class="chat-time">&nbsp;&nbsp;{{ f_h_msg.send_time }} </span></p>
+                        <span class="chat-text-me">{{ f_h_msg.message }}</span>
+                    </li>
+                {% else %}
+                    <li class="list-group-item">
+                        <p>{{ f_h_msg.sender.username }}<span class="chat-time">&nbsp;&nbsp;{{ f_h_msg.send_time }}：</span>
+                        </p>
+                        <span class="chat-text">{{ f_h_msg.message }}</span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            <li class="list-group-item room-hint">---------- 历史消息 ----------</li>
+            {% for f_msg in friend_not_read_msg %}
+                <li class="list-group-item">
+                    <p>{{ f_msg.sender.username }}<span class="chat-time">&nbsp;&nbsp;{{ f_msg.send_time }}：</span>
+                    </p>
+                    <span class="chat-text">{{ f_msg.message }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="chat-input">
+        <form action="" method="post" id="msg-sub">
+            <div class="form-group form-item">
+                <textarea name="msg_con" id="msg-case"
+                          class="form-control input-con"></textarea>
+            </div>
+            <button type="submit" class="btn btn-default btn-sub">发送</button>
+        </form>
+    </div>
+{% endblock %}
+{% block content_right %}
+        <div class="panel panel-default" style="height: 148px;">
+            <div class="panel-heading"><span style="font-weight: bolder;">{{ friend.username }}</span>
+                <a href="{% url 'index' %}" class="pull-right">关闭聊天</a></div>
+            <div class="panel-body">
+                <p style="text-align: center; font-weight: bolder;">自我简介</p>
+                <div id="user-desc">
+                    <p>{{ friend.desc }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" id="add-keyword" placeholder="用户名/房间名">
+                    <span class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">添加好友<span class="caret"></span></button>
+                    <ul class="dropdown-menu">
+                      <li><a href="javascript:" onclick="add_user_group('friend')">添加好友</a></li>
+                      <li><a href="javascript:" onclick="add_user_group('group')">添加房间</a></li>
+                    </ul>
+                </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default member-li">
+            <ul class="nav nav-tabs nav-justified">
+                <li role="presentation" class="active">
+                    <a href="#friend-tab" role="tab" data-toggle="tab">好友列表</a></li>
+                <li role="presentation">
+                    <a href="#group-tab" role="tab" data-toggle="tab">房间列表</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" role="tabpanel" id="friend-tab">
+                    <div class="list-group">
+                        <!-- 先循环判断登录的用户、再循环出剩下的未登录用户 -->
+                        {% for friend_obj in request.user.friend.select_related %}
+                            {% if friend_obj.is_active %}
+                                <a f_id="{{ friend_obj.id }}" href='{% url "chat_friend" friend_obj.id %}' class="list-group-item">
+                                    <span class="badge"></span>
+                                    <span style="color: #000dff;">{{ friend_obj.username }}</span>&nbsp;&nbsp;
+                                    <span class="user-list-desc">({{ friend_obj.desc }})</span></a>
+                            {% endif %}
+                        {% endfor %}
+                        {% for friend_obj in request.user.friend.all %}
+                            {% if not friend_obj.is_active %}
+                                <a f_id="{{ friend_obj.id }}" href='{% url "chat_friend" friend_obj.id %}' class="list-group-item">
+                                    <span class="badge"></span>
+                                    <span>{{ friend_obj.username }}</span>&nbsp;&nbsp;
+                                    <span class="user-list-desc">({{ friend_obj.desc }})</span></a>
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+                <div class="tab-pane" role="tabpanel" id="group-tab">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item disabled">创建的房间</a>
+                        <!-- 判断名字过长隐藏时，显示提示信息 -->
+                        {% for group_obj in request.user.own_group.all %}
+                            {% if group_obj.name|length > 12 %}
+                                <a href='{% url "chat_group" group_obj.id %}' class="list-group-item"
+                                   title="{{ group_obj.name }}">{{ group_obj.name }}</a>
+                            {% else %}
+                                <a href='{% url "chat_group" group_obj.id %}'
+                                   class="list-group-item">{{ group_obj.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        <a href="#" class="list-group-item disabled">加入的房间</a>
+                        {% for group_obj in request.user.join_groups.all %}
+                            {% if group_obj.name|length > 12 %}
+                                <a href='{% url "chat_group" group_obj.id %}' class="list-group-item"
+                                   title="{{ group_obj.name }}">{{ group_obj.name }}</a>
+                            {% else %}
+                                <a href='{% url "chat_group" group_obj.id %}'
+                                   class="list-group-item">{{ group_obj.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block bottom_script %}
+    <script>
+        var msg_num = 0;
+        var f_id = {{ friend.id }};
+        var u_id = {{ request.user.id }};
+        var chatFriendSocket = new WebSocket('ws://' + window.location.host +
+            '/ws/chat/friend/' + f_id + '/');
+
+        chatFriendSocket.onmessage = function (e) {
+            let data = JSON.parse(e.data);
+            let msg = data['message'];
+            // 如果消息是对话双方，直接显示消息
+            if(msg.user_id === f_id || msg.user_id === u_id){
+                AddMsgToBox(msg);
+            }else {
+                let msg_f_id = '[f_id=' + msg.user_id + ']';
+                let msg_user_obj = $("a[f_id]").filter(msg_f_id);
+                // 消息来自非当前聊天对象，则在好友列表中找到该消息对象显示消息条目
+                if(msg_user_obj.length){
+                    msg_num += 1;
+                    msg_user_obj.children('.badge').text(msg_num)
+                }else {
+                    alert('你有陌生人消息')
+                }
+            }
+        };
+
+        // 消息显示在对话框 $('a[f_id]').filter("[f_id='7']").children('.badge').text('3')
+        function AddMsgToBox(msg) {
+            var msg_html = '<li class="list-group-item"><p>' + msg.user_name +
+                '<span class="chat-time">&nbsp;&nbsp;' + msg.send_time +
+                '：</span></p><span class="chat-text">' + msg.msg_data + '</span></li>';
+
+            var my_msg_html = '<li class="list-group-item pull-right"><p style="float: right;">' + msg.user_name +
+                '<span class="chat-time">&nbsp;&nbsp;' + msg.send_time +
+                '：</span></p><span class="chat-text-me">' + msg.msg_data + '</span></li>';
+
+            // 区分消息是否是自己的
+            if (msg.user_id === u_id){
+                $('#chat-box').append(my_msg_html);
+            }else{
+                $('#chat-box').append(msg_html);
+            }
+
+            $('.chat-case').scrollTop(2000);
+        }
+
+        // 发送消息
+        $('#msg-sub').submit(function (e) {
+            e.preventDefault();
+            var msg = $('#msg-case').val();
+
+            if(msg){
+                // 发送消息至websocket
+                chatFriendSocket.send(JSON.stringify({
+                    'message': msg
+                }));
+            }else{
+                alert('评论不能为空')
+            }
+
+            $('#msg-case').val('')
+        });
+
+        //监听窗口关闭事件，当窗口关闭时，主动去关闭WebSocket连接
+        window.onbeforeunload=function(){
+            chatFriendSocket.close();
+        };
+
+        // 页面加载完 滚动条自动到底部
+        $(function () {
+            $('.chat-case').scrollTop(2000);
+        });
+
+        $('#msg-case').focus();
+
+        // 组合键ctrl + enter 发送消息
+        $(document).keypress(function(e) {
+            if (e.ctrlKey && e.which === 13)
+                $('.btn-sub').click();
+        });
+
+        // 添加好友和房间
+        function add_user_group(type) {
+            keyword = $('#add-keyword').val();
+            if (keyword == '') {
+                return false
+            }
+            $.ajax({
+                url: '{% url "add_handle" %}',
+                type: 'post',
+                headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                data: {
+                    keyword: keyword,
+                    type: type
+                },
+                success: function (data) {
+                    if (data.status) {
+                        alert(data.msg)
+                    } else {
+                        alert(data.msg);
+                        location.reload()
+                    }
+                }
+            })
+        }
+    </script>
+{% endblock %}

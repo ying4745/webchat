@@ -1,0 +1,332 @@
+{% extends 'base.html' %}
+{% block title %}web聊天室{% endblock %}
+{% block content_left %}
+    <div class="room-box box">
+        <h3>当前聊天室 ({{ chat_groups.count }})
+            {% if request.user.is_authenticated %}
+                <a class="pull-right" style="margin-right: 20px;" href="#" data-toggle="modal" data-target="#myModal">创建聊天室</a>
+            {% endif %}
+        </h3>
+        <!-- 模态框 -->
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true" data-remote="{% url 'create_group' %}">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                </div>
+            </div>
+        </div>
+        <!-- 模态框结束 -->
+        <hr>
+        <!-- 房间列表 -->
+        <div class="room-list">
+            {% for group_room in chat_groups %}
+                <div class="single-room box">
+                    <div class="room-title">{{ group_room.name }}</div>
+                    <div class="room-desc">{{ group_room.desc }}</div>
+                    <div style="height: 25px;"><span class="pull-left">成员（{{ group_room.group_member }}）</span>
+                        <a href='{% url "chat_group" group_room.id %}' class="pull-right">加入</a></div>
+                </div>
+            {% endfor %}
+        </div>
+        <!-- 房间列表结束 -->
+    </div>
+{% endblock %}
+{% block content_right %}
+    {% if request.user.is_authenticated %}
+        <div class="panel panel-default" style="height: 148px;">
+            <div class="panel-heading"><span style="font-weight: bolder;">{{ request.user.username }}</span>
+                <a href="{% url 'logout' %}" class="pull-right">注销</a></div>
+            <div class="panel-body">
+                <p style="text-align: center; font-weight: bolder;">个人介绍&nbsp;&nbsp;&nbsp;
+                    <span id="desc-edit" class="glyphicon glyphicon-edit"></span></p>
+                <div id="user-desc">
+                    <p>{{ request.user.desc }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" id="add-keyword" placeholder="用户名/房间名">
+                    <span class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">添加好友<span class="caret"></span></button>
+                    <ul class="dropdown-menu">
+                      <li><a href="javascript:" onclick="add_user_group('friend')">添加好友</a></li>
+                      <li><a href="javascript:" onclick="add_user_group('group')">添加房间</a></li>
+                    </ul>
+                </span>
+                </div>
+            </div>
+        </div>
+        <div class="panel panel-default member-li">
+            <ul class="nav nav-tabs nav-justified">
+                <li role="presentation" class="active">
+                    <a href="#friend-tab" role="tab" data-toggle="tab">好友列表</a></li>
+                <li role="presentation">
+                    <a href="#group-tab" role="tab" data-toggle="tab">房间列表</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" role="tabpanel" id="friend-tab">
+                    <div class="list-group">
+                        <!-- 先循环判断登录的用户、再循环出剩下的未登录用户 -->
+                        {% for friend_obj in request.user.friend.select_related %}
+                            {% if friend_obj.is_active %}
+                                <a f_id="{{ friend_obj.id }}" href='{% url "chat_friend" friend_obj.id %}' class="list-group-item">
+                                    <span class="badge"></span>
+                                    <span style="color: #000dff;">{{ friend_obj.username }}</span>&nbsp;&nbsp;
+                                    <span class="user-list-desc">({{ friend_obj.desc }})</span></a>
+                            {% endif %}
+                        {% endfor %}
+                        {% for friend_obj in request.user.friend.all %}
+                            {% if not friend_obj.is_active %}
+                                <a f_id="{{ friend_obj.id }}" href='{% url "chat_friend" friend_obj.id %}' class="list-group-item">
+                                    <span class="badge"></span>
+                                    <span>{{ friend_obj.username }}</span>&nbsp;&nbsp;
+                                    <span class="user-list-desc">({{ friend_obj.desc }})</span></a>
+                            {% endif %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+                <div class="tab-pane" role="tabpanel" id="group-tab">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item disabled">创建的房间</a>
+                        <!-- 判断名字过长隐藏时，显示提示信息 -->
+                        {% for group_obj in request.user.own_group.all %}
+                            {% if group_obj.name|length > 12 %}
+                                <a href='{% url "chat_group" group_obj.id %}' class="list-group-item" title="{{ group_obj.name }}">{{ group_obj.name }}</a>
+                            {% else %}
+                                <a href='{% url "chat_group" group_obj.id %}' class="list-group-item">{{ group_obj.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        <a href="#" class="list-group-item disabled">加入的房间</a>
+                        {% for group_obj in request.user.join_groups.all %}
+                            {% if group_obj.name|length > 12 %}
+                                <a href='{% url "chat_group" group_obj.id %}' class="list-group-item" title="{{ group_obj.name }}">{{ group_obj.name }}</a>
+                            {% else %}
+                                <a href='{% url "chat_group" group_obj.id %}' class="list-group-item">{{ group_obj.name }}</a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="login-panel box">
+            <div class="login-box">
+                <h3>登录</h3>
+                <hr>
+                <form action="" novalidate method="post" id="login-form">
+                    {% csrf_token %}
+                    {% for field in login_form %}
+                        <div class="form-group">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            <span class="help-block">{{ field.errors.0 }}</span>
+                        </div>
+                    {% endfor %}
+
+                    {#                <div class="checkbox">#}
+                    {#                    <label>#}
+                    {#                        <input type="checkbox">记住我#}
+                    {#                    </label>#}
+                    {#                </div>#}
+                    <button type="button" onclick="login_form()" class="btn btn-block">登录</button>
+                    <button type="button" onclick="to_register()" class="btn btn-block">注册用户</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block bottom_script %}
+    <script>
+        const right_panel = $('.login-box');
+        const login_data = right_panel.html();
+
+        var msg_num = 0;
+        var chatFriendSocket = new WebSocket('ws://' + window.location.host +
+            '/ws/chat/friend/0/');
+
+        chatFriendSocket.onmessage = function (e) {
+            let data = JSON.parse(e.data);
+            let msg = data['message'];
+            // 在好友列表中寻找消息发送者
+            let msg_f_id = '[f_id=' + msg.user_id + ']';
+            let msg_user_obj = $("a[f_id]").filter(msg_f_id);
+            // 如果找到 则消息数加一
+            if(msg_user_obj.length){
+                msg_num += 1;
+                msg_user_obj.children('.badge').text(msg_num)
+            }else {
+                alert('你有陌生人消息')
+            }
+        };
+
+        //监听窗口关闭事件，当窗口关闭时，主动去关闭WebSocket连接
+        window.onbeforeunload=function(){
+            chatFriendSocket.close();
+        };
+
+        // 跳转注册页面
+        function to_register() {
+            $.get('{% url "register" %}', function (data) {
+                right_panel.html(data);
+            })
+        }
+
+        // 跳回登录页面
+        function to_login() {
+            right_panel.html(login_data);
+        }
+
+        // form表单填充错误信息
+        function add_error(error_msg) {
+            $.each(error_msg, function (k, v) {
+                $('#id_' + k).next('span').text(v[0]).parent().addClass('has-error');
+            });
+        }
+
+        // ajax注册用户
+        function register_form() {
+            let reg_data = {
+                username: $('#id_username').val(),
+                password: $('#id_password').val(),
+                re_password: $('#id_re_password').val(),
+            };
+            $.ajax({
+                url: '{% url "register" %}',
+                type: 'post',
+                // 从Cookie取csrftoken，并设置到请求头中
+                headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                data: reg_data,
+                success: function (data) {
+                    if (data.status) {
+                        add_error(data.msg)
+                    } else {
+                        location.href = '{% url "index" %}'
+                    }
+                }
+            })
+        }
+
+        // ajax登录用户
+        function login_form() {
+            let login_data = {
+                username: $('#id_username').val(),
+                password: $('#id_password').val(),
+            };
+            $.ajax({
+                url: '{% url "index" %}',
+                type: 'post',
+                headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                data: login_data,
+                success: function (data) {
+                    if (data.status) {
+                        add_error(data.msg)
+                    } else {
+                        location.reload()
+                    }
+                }
+            })
+        }
+
+        // 使用on进行事件委派，移除错误提示内容
+        right_panel.on("focus", "input", function () {
+            $(this).next('span').text('').parent().removeClass('has-error');
+        });
+
+        // 编辑个人简介
+        var desc_obj = $('#user-desc');  // 获取简介元素框
+        var text = $('#user-desc p').text();  // 获取简介的文本值
+        // 绑定点击事件，点击简介文本变成input输入框，并获得焦点
+        $('#desc-edit').click(function () {
+            var input_html = $('<input type="text" id="desc-input" value=' + text + '>');
+            desc_obj.html(input_html);
+            input_html.trigger("focus");
+        });
+
+        // 编辑框获得焦点时，全选文本值
+        desc_obj.on('focus', 'input', function () {
+            this.select()
+        });
+
+        // 编辑框失去焦点时，发起ajax请求保存简介内容
+        desc_obj.on('blur', 'input', function () {
+            var new_text = $(this).val();
+            if (text !== new_text) {
+                $.ajax({
+                    url: '{% url "useredit" %}',
+                    type: 'post',
+                    headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                    data: {desc: new_text},
+                    success: function (data) {
+                        if (data.status) {
+                            alert(data.msg)
+                        } else {
+                            desc_obj.html('<p>' + new_text + '</p>');
+                            text = new_text
+                        }
+                    }
+                })
+            } else {
+                desc_obj.html('<p>' + text + '</p>')
+            }
+        });
+
+        // 添加好友和房间
+        function add_user_group(type) {
+            keyword = $('#add-keyword').val();
+            if (keyword == '') {
+                return false
+            }
+            $.ajax({
+                url: '{% url "add_handle" %}',
+                type: 'post',
+                headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                data: {
+                    keyword: keyword,
+                    type: type
+                },
+                success: function (data) {
+                    if (data.status) {
+                        alert(data.msg)
+                    } else {
+                        alert(data.msg);
+                        location.reload()
+                    }
+                }
+            })
+        }
+
+        // 创建房间
+        function create_group() {
+            var name = $('#id_name').val();
+            var desc = $('#id_desc').val();
+            if (name && desc) {
+                $.ajax({
+                    url: '{% url "create_group" %}',
+                    type: 'post',
+                    headers: {"X-CSRFToken": $.cookie('csrftoken')},
+                    data: {
+                        name: name,
+                        desc: desc,
+                    },
+                    success: function (data) {
+                        if (data.status) {
+                            add_error(data.msg)
+                        } else {
+                            alert(data.msg);
+                            $('#myModal').modal('hide');
+                            $('#id_name').val('');
+                            $('#id_desc').val('');
+                            location.reload()
+                        }
+                    }
+                })
+            }
+        }
+    </script>
+{% endblock %}

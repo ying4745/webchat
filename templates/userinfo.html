@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}web聊天室{% endblock %}
+{% block content_left %}
+    <div class="room-box box">
+        <h3>当前聊天室</h3>
+        <hr>
+        <div class="room-list">
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+            <div class="single-room">房间1</div>
+        </div>
+    </div>
+{% endblock %}
+{% block content_right %}
+<div class="panel panel-default">
+    <div class="panel-heading">{{ request.user.username }}</div>
+    <div class="panel-body">
+        <p>鹦鹉养殖经验交流、同城鸟友交易</p>
+        <hr>
+        <p>群主：我是大王</p>
+        <p>当前234人</p>
+    </div>
+</div>
+<div class="panel panel-default member-li">
+    <div class="panel-heading">当前成员</div>
+    <div class="panel-body">
+        <div class="list-group">
+            <a href="#" class="list-group-item">Cras justo odio</a>
+            <a href="#" class="list-group-item">Dapibus ac </a>
+            <a href="#" class="list-group-item">Morbi leo risus</a>
+            <a href="#" class="list-group-item">Porta ac consectetur</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+            <a href="#" class="list-group-item">Vestibulum at eros</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

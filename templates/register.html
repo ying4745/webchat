@@ -1,0 +1,14 @@
+<h3>注册</h3>
+<hr>
+<form action="" novalidate>
+    {% csrf_token %}
+    {% for field in reg_form %}
+        <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            <span class="help-block">{{ field.errors.0 }}</span>
+        </div>
+    {% endfor %}
+    <button type="button" onclick="register_form()" class="btn btn-block">注册用户</button>
+    <button type="button" onclick="to_login()" class="btn btn-block">登录</button>
+</form>

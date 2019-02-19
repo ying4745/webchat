@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+{% load staticfiles %}
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}web聊天室{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block top_script %}{% endblock %}
+
+</head>
+<body>
+<div class="wrapper">
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-9 col-md-offset-1">
+                    <div class="navbar-header"><a class="navbar-brand">web聊天室</a></div>
+                    <div class="navbar-right">
+                        {% if request.user.is_authenticated %}
+                            <p class="navbar-text">当前用户：{{ request.user.username }}</p>
+                        {% endif %}
+                        <p class="navbar-text">在线人数</p>
+                        <p class="navbar-text">注册人数</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9 col-md-offset-1 box">
+                <div class="row">
+                    <div class="col-md-9 rm-pad">
+                        <div class="chat-user chat-left">
+                        {% block content_left %}{% endblock %}
+                        </div>
+                    </div>
+                    <div class="col-md-3 rm-pad">
+                        <div class="chat-user">
+                        {% block content_right %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{% static 'js/jquery-1.12.4.min.js' %}"></script>
+<script src="{% static 'js/jquery.cookie.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+
+{% block bottom_script %}{% endblock %}
+
+</body>
+</html>

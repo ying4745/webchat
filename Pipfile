@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.douban.com/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "*"
+channels = "*"
+channels-redis = "*"
+twisted = "*"
+mysqlclient = "*"
+django-redis = "*"
+
+[requires]
+python_version = "3.6"

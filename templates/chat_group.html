@@ -146,18 +146,18 @@
 
         // 消息显示在对话框
         function AddMsgToBox(msg) {
-            var msg_html = '<li class="list-group-item"><p>' + msg.user_name +
-                '<span class="chat-time">&nbsp;&nbsp;' + msg.send_time +
-                '：</span></p><span class="chat-text">' + msg.msg_data + '</span></li>';
-
-            var my_msg_html = '<li class="list-group-item pull-right"><p style="float: right;">' + msg.user_name +
+            // 区分消息是否是自己的
+            if (msg.user_name === user_name){
+                var msg_html = '<li class="list-group-item pull-right"><p style="float: right;">' + msg.user_name +
                 '<span class="chat-time">&nbsp;&nbsp;' + msg.send_time +
                 '：</span></p><span class="chat-text-me">' + msg.msg_data + '</span></li>';
 
-            // 区分消息是否是自己的
-            if (msg.user_name === user_name){
-                $('#chat-box').append(my_msg_html);
+                $('#chat-box').append(msg_html);
             }else{
+                var msg_html = '<li class="list-group-item"><p>' + msg.user_name +
+                '<span class="chat-time">&nbsp;&nbsp;' + msg.send_time +
+                '：</span></p><span class="chat-text">' + msg.msg_data + '</span></li>';
+
                 $('#chat-box').append(msg_html);
             }
 
